@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/User/CLionProjects/CMP2003DENEME1/hashtable.h
+
+C:/Users/User/CLionProjects/CMP2003DENEME1/linkedList.h
+
+C:/Users/User/CLionProjects/CMP2003DENEME1/main.cpp
+iostream
+-
+string
+-
+fstream
+-
+ctime
+-
+hashtable.h
+C:/Users/User/CLionProjects/CMP2003DENEME1/hashtable.h
+linkedList.h
+C:/Users/User/CLionProjects/CMP2003DENEME1/linkedList.h
+
