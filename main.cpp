@@ -1,70 +1,64 @@
-#include <iostream>
+﻿#include <iostream>
 #include <string>
 #include <fstream>
 #include <ctime>
 #include "hashtable.h"
 #include "linkedList.h"
 
-int main()
+
+linkedList<node> dividedText;   // PublicationsDataSet-> all lines to linkedList 
+linkedList<node> notTakenWords; // stopWords
+
+hashtable<wordCount> storage(200011); // 150k key for %70 load factor size is = 210k + next prime number
+
+void fileParserAndInserter() // file parsing and take words -> insert hashtable
 {
-    const clock_t begin = clock();
 
-    hashtable mainStorage(160000);
+    size_t firstCharFound, lastCharFound;
 
-    linkedList dividedText;
-    linkedList stopWordsList;
-
-    size_t firstCharFound, lastCharFound, firstCharIndex, lastIntIndex;
-    int countOfSupra;
-
-    int index, newDigit, oldDigit, newCount;
+    int  newCount;
 
     std::string tempWord, tempLine;
 
-    //----------------------------------------------------------------------------------------------------------------------
-
-    std::ifstream publicationsDataSetFile("PublicationsDataSet.txt");
-
-    std::ifstream stopWordsFile("stopwords.txt");
+    std::ifstream publicationsDataSetFile("PublicationsDataSet.txt"); // read file
 
     if (!publicationsDataSetFile.is_open())
     {
         std::cerr << "File can not be opened" << std::endl;
     }
+
+    std::ifstream stopWordsFile("stopwords.txt"); // read file
+
     if (!stopWordsFile.is_open())
     {
         std::cerr << "File can not be opened" << std::endl;
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-
-    while (std::getline(publicationsDataSetFile, tempLine)) //  until find UnigramCount
+    while (std::getline(publicationsDataSetFile, tempLine)) //  read line after unigramCount 
     {
-
-        int deletionPoint = (int)tempLine.find("\"unigramCount\":");
-        tempLine = tempLine.substr((deletionPoint + 16), tempLine.length() - (deletionPoint + 18));
+        int notTakenPosition = (int)tempLine.find("\"unigramCount\":");
+        tempLine = tempLine.substr((notTakenPosition + 16), tempLine.length() - (notTakenPosition + 18));
         dividedText.insert(tempLine);
     }
 
-    while (std::getline(stopWordsFile, tempLine))
+    while (std::getline(stopWordsFile, tempLine)) // insert stopwords to linkedList
     {
-        stopWordsList.insert(tempLine);
+        notTakenWords.insert(tempLine);
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
+    size_t numeric; // wordCount position in line
 
-    for (int i = 0; i < dividedText.getCount(); i++)
+    std::string wordCountButString; 
+    
+    for (int i = 0; i < dividedText.getCount(); i++) // 1500 line
     {
         lastCharFound = 0;
-        index = 0;
-        newDigit = 0;
 
-        const std::string &text = dividedText.moveToNextAndGetData();
+        std::string text = dividedText.moveToNextAndGetData(); 
 
-        while (lastCharFound + 6 < text.length())
+        while (lastCharFound <= text.length() - 2) // until find  "}}" 
         {
 
-            newCount = 0;
             firstCharFound = text.find('\"', lastCharFound);
 
             if (firstCharFound + 1 != std::string::npos)
@@ -72,77 +66,116 @@ int main()
                 lastCharFound = text.find("\":", firstCharFound + 1);
             }
 
-            while (isdigit(lastCharFound + 2))
+            while (!isdigit(text[lastCharFound + 2])) // find the word's last char position
             {
                 lastCharFound = text.find("\":", lastCharFound + 1);
-                std::cout << lastCharFound << std::endl;
+
             }
+            tempWord = text.substr(firstCharFound + 1, lastCharFound - firstCharFound - 1); // extract the word
 
-            //                lastIntIndex=text.find(',', lastCharFound+1);//***
-            //                std::cout << countOfSupra << std::endl;
-            //                std::cout << text.substr(lastCharFound + 2,lastIntIndex) << std::endl;
-            //            countOfSupra = std::stoi(text.substr(lastCharFound ,lastIntIndex));
-            //            std::cout << countOfSupra << std::endl;
-            //            oldDigit = newDigit;
-            //            newDigit = 1;
+            numeric = text.find(',', lastCharFound + 2);
 
-            //            while (text[lastCharFound + 2 + newDigit] <= '9' && text[lastCharFound + 2 + newDigit] >= '0')
-            //            {
-            //                newDigit++;
-            //            }
-            //            if ((lastCharFound + 2 + newDigit) < text.length())
-            //            {
-            //                if (text[lastCharFound + 2 + newDigit] != ',')
-            //                {
-            //                    lastCharFound = text.find("\":", lastCharFound + 1);
-            //                }
-            //            }
-            //
-            //            newDigit = 0;
-            //
-            //            while (text[lastCharFound + 2 + newDigit] <= '9' && text[lastCharFound + 2 + newDigit] >= '0')
-            //            {
-            //                newCount = newCount * 10;
-            //                newCount += text[lastCharFound + 2 + newDigit] - '0';
-            //                newDigit++;
-            //            }
+            wordCountButString = text.substr(lastCharFound + 2, numeric - (lastCharFound + 2));
 
-            if (index == 0)
-            {
-                firstCharIndex = firstCharFound + 1;
-            }
-            else
-            {
-                firstCharIndex = firstCharFound + 4 + oldDigit;
-            }
+            newCount = std::stoi(wordCountButString); // change wordCount string to int
+            lastCharFound = text.find('\"', lastCharFound + 1);
 
-            tempWord = text.substr(firstCharIndex, lastCharFound - firstCharIndex);
 
-            if (checkWord(tempWord))
+            bool flag1 = false; // for first char and last char of word 
+            bool flag0 = false; // for word to insert hashtable
+
+            // checking Word to insert hashtable
+
+            if (tempWord.length() > 2)
             {
 
-                mainStorage.insert(tempWord, countOfSupra);
+                if (!std::isalpha(tempWord[0] || tempWord[tempWord.length() - 1]))
+                {
+                    flag1 = true;
+                }
+
+                if (flag1)
+                {
+                    for (int i = 0; !std::isalpha(tempWord[i]); i++)
+                    {
+                        if (tempWord.length() < 4)
+                        {
+                            flag0 = true; break;
+                        }
+
+                        else {
+                            if (tempWord.length() < 4)
+                            {
+                                flag0 = true; break;
+                            }
+                            tempWord.erase(0, 1);
+
+                        }
+                    }
+                    if (flag0) { continue; }
+                    for (int i = tempWord.length() - 1; !std::isalpha(tempWord[i]); i--)
+                    {
+                        if (tempWord.length() < 3)
+                        {
+                            flag0 = true; break;
+                        }
+                        else {
+                            tempWord.erase(i, i + 1);
+                        }
+                        if (tempWord.length() < 3)
+                        {
+                            flag0 = true; break;
+                        }
+                    }
+                    if (flag0)
+                    {
+                        continue;
+                    }
+                }
+
+                for (int i = 0; i < (int)tempWord.length() - 1; i++)
+                {
+                    if (!std::isalpha(tempWord[i]))
+                    {
+                        flag0 = true; break;
+                    }
+                }
+                if (flag0)
+                {
+                    continue;
+                }
             }
-            index++;
+            else { continue; }
+
+            for (int i = 0; i < tempWord.length() ; i++)
+            {
+                tempWord[i] = std::tolower(tempWord[i]); // all chars to lowercase
+            }
+
+            storage.insert(tempWord, newCount); // insert the word and its count 
+
         }
     }
 
-    //----------------------------------------------------------------------------------------------------------------------
-
-    for (int i = 0; i < stopWordsList.getCount(); i++)
+    for (int i = 0; i < notTakenWords.getCount(); i++)
     {
-        mainStorage.remove(stopWordsList.at(i));
+        storage.remove(notTakenWords.at(i)); // remove the stopwords from hashtable
     }
+    return;
+}
 
-    const wordCount *top10 = mainStorage.top10();
 
-    for (int i = 0; i < 10; i++)
-    {
-        std::cout << top10[i].count << " " << top10[i].word << std::endl;
-    }
 
-    const clock_t end = clock();
+int main()
+{
+    const clock_t begin = clock(); 
+
+    fileParserAndInserter();
+
+    storage.winners(); // sort and print top 10
+    
+    const  clock_t end = clock();
     std::cout << "Total Elapsed Time " << (end - begin) << " miliseconds" << std::endl;
-
-    delete[] top10;
+    
+    return 0;
 }

@@ -1,91 +1,118 @@
-#ifndef CMP2003DENEME1_LINKEDLIST_H
-#define CMP2003DENEME1_LINKEDLIST_H
+#pragma once
 
+struct node
+{
+    std::string data;
+    node* link;
+};
+
+template <class elemType>
 class linkedList
 {
 private:
-    struct node
-    {
-        std::string data;
-        node *link;
-    };
 
-    node *first;
-    node *last;
-    node *current;
+    elemType* first;
+    elemType* last;
+    elemType* current;
 
     int count;
 
 public:
-    linkedList()
+
+    linkedList() // constructor
     {
         first = nullptr;
         last = nullptr;
         current = nullptr;
         count = 0;
+
     }
 
-    ~linkedList()
+    ~linkedList() // destructor
     {
         deleteAllNodes();
     }
 
-    void deleteAllNodes()
-    {
-        node *nodeIterator = first;
-        while (nullptr != nodeIterator)
-        {
-            node *nodeToDelete = nodeIterator;
-            nodeIterator = nodeIterator->link;
-            delete nodeToDelete;
-        }
-    }
+    void deleteAllNodes();
 
-    int getCount() const
-    {
-        return count;
-    }
+    int getCount() const;
 
-    void insert(std::string newData)
-    {
-        node *newNode = new node;
-        newNode->data = newData;
-        newNode->link = nullptr;
+    void insert(std::string newData);
 
-        if (last != nullptr)
-        {
-            last->link = newNode;
-            last = newNode;
-        }
-        else
-        {
-            first = newNode;
-            last = newNode;
-            current = newNode;
-            newNode->link = nullptr;
-        }
-        count++;
-    }
+    std::string at(int position) const;
 
-    std::string at(int position) const
-    {
-        node *temp = first;
-        for (int i = 0; i < position; i++)
-        {
-            temp = temp->link;
-        }
-        return temp->data;
-    }
+    const std::string& moveToNextAndGetData();
 
-    const std::string &moveToNextAndGetData()
-    {
-        while (current->link != nullptr)
-        {
-            std::string &data = current->data;
-            current = current->link;
-            return data;
-        }
-    }
 };
 
-#endif // CMP2003DENEME1_LINKEDLIST_H
+
+
+template<class elemType>
+void linkedList<elemType>::deleteAllNodes()
+{
+    node* nodeIterator = first;
+    while (nullptr != nodeIterator)
+    {
+        node* nodeToDelete = nodeIterator;
+        nodeIterator = nodeIterator->link;
+        delete nodeToDelete;
+    }
+
+}
+
+
+template<class elemType>
+int linkedList<elemType>::getCount()const
+{
+    return count;
+}
+
+
+
+template<class elemType>
+void linkedList<elemType>::insert(std::string newData)
+{
+    node* newNode = new node;
+    newNode->data = newData;
+    newNode->link = nullptr;
+
+    if (last != nullptr)
+    {
+        last->link = newNode;
+        last = newNode;
+    }
+    else
+    {
+        first = newNode;
+        last = newNode;
+        current = newNode;
+        newNode->link = nullptr;
+    }
+    count++;
+    return;
+}
+
+
+template<class elemType>
+std::string linkedList<elemType>::at(int position) const
+{
+    node* temp = first;
+    for (int i = 0; i < position; i++)
+    {
+        temp = temp->link;
+    }
+    return temp->data;
+}
+
+template<class elemType>
+const std::string& linkedList<elemType>::moveToNextAndGetData() {
+    if (current->link != nullptr)
+    {
+        std::string& data = current->data;
+        current = current->link;
+        return data;
+    }
+
+}
+
+
